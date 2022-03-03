@@ -1,18 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class ConveyorItem : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public CandyType Type = CandyType.None;
+
+    [HideInInspector] public ConveyorBelt CurrentBelt;
+    [HideInInspector] public ConveyorBelt TouchingBelt;
+
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        
+        if (collision.transform.GetComponent<SwipeZone>() != null)
+        {
+            SwipeZone zone = collision.transform.GetComponent<SwipeZone>();
+            if (zone.AssociatedBelt.AcceptableTypes.HasFlag(Type))
+            {
+                TouchingBelt = zone.AssociatedBelt;
+            }
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        
+        TouchingBelt = null;
     }
 }

@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2590597045070476885}
   - component: {fileID: 2590597045070476884}
-  - component: {fileID: 2590597045070476886}
   - component: {fileID: 8927913699286371430}
+  - component: {fileID: 973092604}
+  - component: {fileID: 1670302334772753201}
   m_Layer: 0
   m_Name: Candy
   m_TagString: Untagged
@@ -84,56 +85,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!60 &2590597045070476886
-PolygonCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2590597045070476883}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.44, y: 0.79}
-    newSize: {x: 19.2, y: 10.8}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: 0.21, y: -0.345}
-      - {x: 0.37, y: -0.175}
-      - {x: 0.41, y: -0.074999996}
-      - {x: 0.42999998, y: 0.005}
-      - {x: 0.53999996, y: 0.024999999}
-      - {x: 0.68, y: 0.005}
-      - {x: 0.71999997, y: 0.055}
-      - {x: 0.71999997, y: 0.285}
-      - {x: 0.62, y: 0.39499998}
-      - {x: 0.47, y: 0.39499998}
-      - {x: 0.32999998, y: 0.33499998}
-      - {x: 0.16, y: 0.39499998}
-      - {x: 0.06, y: 0.39499998}
-      - {x: -0.14999999, y: 0.375}
-      - {x: -0.38, y: 0.195}
-      - {x: -0.44, y: 0.024999999}
-      - {x: -0.55, y: 0.015}
-      - {x: -0.71999997, y: -0.005}
-      - {x: -0.71999997, y: -0.285}
-      - {x: -0.65, y: -0.355}
-      - {x: -0.59, y: -0.39499998}
-      - {x: -0.45999998, y: -0.39499998}
-      - {x: -0.35999998, y: -0.305}
-      - {x: -0.14, y: -0.39499998}
-      - {x: -0.03, y: -0.39499998}
 --- !u!114 &8927913699286371430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,3 +97,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a3be5c23675fc348ba48c51d98a62d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 1
+  CurrentBelt: {fileID: 0}
+  TouchingBelt: {fileID: 0}
+--- !u!50 &973092604
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2590597045070476883}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 0.0001
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 7
+--- !u!58 &1670302334772753201
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2590597045070476883}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 1

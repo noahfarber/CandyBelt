@@ -4,15 +4,20 @@ using UnityEngine;
 
 public class ConveyorBelt : MonoBehaviour
 {
+    public CandyType AcceptableTypes = CandyType.None;
+    public Vector3 Direction = Vector3.right;
     [HideInInspector] public List<ConveyorItem> Items = new List<ConveyorItem>();
     [HideInInspector] public List<ConveyorItem> InactiveItemPool = new List<ConveyorItem>();
+    [SerializeField] private bool _CanSpawnItems = false;
+
     [SerializeField] private GameObject _ConveyorItemPrefab;
     [SerializeField] private Transform _StartPosition;
     [SerializeField] private Transform _EndPosition;
     [SerializeField] private float _Speed = 5f;
 
     private int _ItemsToGenerateOnStart = 5;
-    private bool debugLoop = true;
+    private Vector3 positionHolder = Vector3.zero; // Used for item position calculation
+    private Vector3 scaleHolder = Vector3.zero; // Used for item position calculation
 
     // Start is called before the first frame update
     void Start()
@@ -21,19 +26,14 @@ public class ConveyorBelt : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void Process()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            SpawnItem();
-        }
-
         MoveBeltItems();
     }
 
     private void Init()
     {
-        if(InactiveItemPool.Count == 0)
+        if(InactiveItemPool.Count == 0 && _CanSpawnItems)
         {
             for (int i = 0; i < _ItemsToGenerateOnStart; i++)
             {
@@ -51,6 +51,11 @@ public class ConveyorBelt : MonoBehaviour
 
     public void SpawnItem()
     {
+        if(!_CanSpawnItems)
+        {
+            return;
+        }
+
         if(InactiveItemPool.Count <= 0)
         {
             CreateItem();
@@ -60,21 +65,32 @@ public class ConveyorBelt : MonoBehaviour
         newItem.transform.position = _StartPosition.position;
         newItem.gameObject.SetActive(true);
         AddItem(newItem);
+        Debugger.Instance.Log("Spawning a candy");
     }
 
     public void AddItem(ConveyorItem item)
     {
-        if(Items.Contains(item))
+        if (InactiveItemPool.Contains(item)) { InactiveItemPool.Remove(item); }
+
+        if (Items.Contains(item))
         {
             Items.Remove(item);
-            Debug.LogError($"Added {item.name} to conveyor belt but belt already contains {item.name}");
+            Debugger.Instance.LogError($"Added {item.name} to conveyor belt but belt already contains {item.name}");
         }
 
+        item.CurrentBelt = this;
+        item.transform.parent = transform;
         Items.Add(item);
     }
 
+    public void RemoveItem(ConveyorItem item)
+    {
+        if(Items.Contains(item))
+        {
+            Items.Remove(item);
+        }
+    }
 
-    private Vector3 positionHolder = Vector3.zero;
 
     private void MoveBeltItems()
     {
@@ -82,29 +98,75 @@ public class ConveyorBelt : MonoBehaviour
         {
             ConveyorItem item = Items[i];
             positionHolder = item.transform.position;
-            positionHolder.x += _Speed * Time.deltaTime;
-            if (positionHolder.x < _EndPosition.position.x)
+            scaleHolder = item.transform.localScale;
+
+            if (HasReachedEnd())
             {
-                positionHolder.x += _Speed * Time.deltaTime;
+                ItemCollected(item);
             }
             else
             {
-                if (debugLoop)
+                positionHolder += _Speed * Time.deltaTime * Direction;
+
+                if(Direction == Vector3.up)
                 {
-                    positionHolder.x = _StartPosition.position.x;
-                }
-                else
-                {
-                    RecycleItem(item);
+                    scaleHolder.x = 1f - (.5f * DistanceTraveled());
+                    scaleHolder.y = 1f - (.5f * DistanceTraveled());
                 }
             }
+
             item.transform.position = positionHolder;
+            item.transform.localScale = scaleHolder;
         }
+    }
+
+    private bool HasReachedEnd()
+    {
+        bool rtn = false;
+
+        if (Direction == Vector3.right)
+        {
+            rtn = positionHolder.x >= _EndPosition.position.x;
+        }
+        else if (Direction == Vector3.up)
+        {
+            rtn = positionHolder.y >= _EndPosition.position.y;
+        }
+
+        return rtn;
+    }
+
+    private float DistanceTraveled()
+    {
+        float rtn = 0f;
+
+        if (Direction == Vector3.right)
+        {
+            rtn = positionHolder.x / _EndPosition.position.x;
+        }
+        else if (Direction == Vector3.up)
+        {
+            rtn = positionHolder.y / _EndPosition.position.y;
+        }
+
+        return rtn;
+    }
+
+    private void ItemCollected(ConveyorItem item)
+    {
+        if(AcceptableTypes.HasFlag(item.Type))
+        {
+            GameController.Instance.CollectItem(item);
+        }
+
+        RecycleItem(item);
     }
 
     private void RecycleItem(ConveyorItem item)
     {
+        Debugger.Instance.Log($"Belt {gameObject.name} is recycling item: {item.transform.name}");
         Items.Remove(item);
         InactiveItemPool.Add(item);
+        item.gameObject.SetActive(false);
     }
 }
