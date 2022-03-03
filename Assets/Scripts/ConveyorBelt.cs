@@ -10,7 +10,7 @@ public class ConveyorBelt : MonoBehaviour
     [HideInInspector] public List<ConveyorItem> InactiveItemPool = new List<ConveyorItem>();
     [SerializeField] private bool _CanSpawnItems = false;
 
-    [SerializeField] private GameObject _ConveyorItemPrefab;
+    [SerializeField] private GameObject[] _ConveyorItemPrefabs;
     [SerializeField] private Transform _StartPosition;
     [SerializeField] private Transform _EndPosition;
     [SerializeField] private float _Speed = 5f;
@@ -44,7 +44,7 @@ public class ConveyorBelt : MonoBehaviour
 
     private void CreateItem()
     {
-        GameObject prefab = Instantiate(_ConveyorItemPrefab, transform);
+        GameObject prefab = Instantiate(_ConveyorItemPrefabs[Random.Range(0, _ConveyorItemPrefabs.Length)], transform);
         InactiveItemPool.Add(prefab.GetComponent<ConveyorItem>());
         prefab.SetActive(false);
     }

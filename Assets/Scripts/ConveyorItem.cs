@@ -15,10 +15,13 @@ public class ConveyorItem : MonoBehaviour
         if (collision.transform.GetComponent<SwipeZone>() != null)
         {
             SwipeZone zone = collision.transform.GetComponent<SwipeZone>();
-            if (zone.AssociatedBelt.AcceptableTypes.HasFlag(Type))
+            TouchingBelt = zone.AssociatedBelt;
+
+            // HANDICAP VERSION
+            /*if (zone.AssociatedBelt.AcceptableTypes.HasFlag(Type))
             {
                 TouchingBelt = zone.AssociatedBelt;
-            }
+            }*/
         }
     }
 
