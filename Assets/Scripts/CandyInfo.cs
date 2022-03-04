@@ -14,5 +14,6 @@ public enum CandyType
     None = 0,
     BlueCandy = 1,
     HardCandy = 2,
-    Gumball = 4
+    Gumball = 4,
+    Heart = 8
 }
