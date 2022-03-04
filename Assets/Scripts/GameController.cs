@@ -7,8 +7,8 @@ public class GameController : MonoBehaviour
     public static GameController Instance;
 
     public RoundController RoundManager;
-    public ConveyorBelt MainBelt;
-    public ConveyorBelt[] ForwardBelts;
+    public Dispenser ItemDispenser;
+    public ConveyorBelt[] ConveyorBelts;
 
     [HideInInspector] public GameStates State = GameStates.Playing;
 
@@ -80,11 +80,9 @@ public class GameController : MonoBehaviour
 
     private void ProcessBelts()
     {
-        MainBelt.Process();
-
-        for (int i = 0; i < ForwardBelts.Length; i++)
+        for (int i = 0; i < ConveyorBelts.Length; i++)
         {
-            ForwardBelts[i].Process();
+            ConveyorBelts[i].Process();
         }
     }
 
@@ -107,7 +105,7 @@ public class GameController : MonoBehaviour
 
     private void SpawnItem()
     {
-        MainBelt.SpawnItem();
+        ItemDispenser.SpawnItem();
         UpdateSpawnTime();
         RoundManager.ItemSpawned();
         _SpawnTimer = 0f;

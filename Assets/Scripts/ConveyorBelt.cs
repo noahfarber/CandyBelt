@@ -7,22 +7,20 @@ public class ConveyorBelt : MonoBehaviour
     public CandyType AcceptableTypes = CandyType.None;
     public Vector3 Direction = Vector3.right;
     [HideInInspector] public List<ConveyorItem> Items = new List<ConveyorItem>();
-    [HideInInspector] public List<ConveyorItem> InactiveItemPool = new List<ConveyorItem>();
-    [SerializeField] private bool _CanSpawnItems = false;
 
-    [SerializeField] private GameObject[] _ConveyorItemPrefabs;
+    [SerializeField] private Dispenser RecycleDispenser;
     [SerializeField] private Transform _StartPosition;
     [SerializeField] private Transform _EndPosition;
     [SerializeField] private float _Speed = 5f;
+    private float _CorrectiveSpeed = 2f;
 
-    private int _ItemsToGenerateOnStart = 5;
     private Vector3 positionHolder = Vector3.zero; // Used for item position calculation
     private Vector3 scaleHolder = Vector3.zero; // Used for item position calculation
 
     // Start is called before the first frame update
     void Start()
     {
-        Init();
+
     }
 
     // Update is called once per frame
@@ -31,47 +29,9 @@ public class ConveyorBelt : MonoBehaviour
         MoveBeltItems();
     }
 
-    private void Init()
-    {
-        if(InactiveItemPool.Count == 0 && _CanSpawnItems)
-        {
-            for (int i = 0; i < _ItemsToGenerateOnStart; i++)
-            {
-                CreateItem();
-            }
-        }
-    }
-
-    private void CreateItem()
-    {
-        GameObject prefab = Instantiate(_ConveyorItemPrefabs[Random.Range(0, _ConveyorItemPrefabs.Length)], transform);
-        InactiveItemPool.Add(prefab.GetComponent<ConveyorItem>());
-        prefab.SetActive(false);
-    }
-
-    public void SpawnItem()
-    {
-        if(!_CanSpawnItems)
-        {
-            return;
-        }
-
-        if(InactiveItemPool.Count <= 0)
-        {
-            CreateItem();
-        }
-
-        ConveyorItem newItem = InactiveItemPool[Random.Range(0, InactiveItemPool.Count)];
-        newItem.transform.position = _StartPosition.position;
-        newItem.gameObject.SetActive(true);
-        AddItem(newItem);
-        Debugger.Instance.Log("Spawning a candy");
-    }
 
     public void AddItem(ConveyorItem item)
     {
-        if (InactiveItemPool.Contains(item)) { InactiveItemPool.Remove(item); }
-
         if (Items.Contains(item))
         {
             Items.Remove(item);
@@ -91,7 +51,6 @@ public class ConveyorBelt : MonoBehaviour
         }
     }
 
-
     private void MoveBeltItems()
     {
         for (int i = 0; i < Items.Count; i++)
@@ -108,8 +67,18 @@ public class ConveyorBelt : MonoBehaviour
             {
                 positionHolder += _Speed * Time.deltaTime * Direction;
 
-                if(Direction == Vector3.up)
+                if(ForwardBelt())
                 {
+                    // Move item closer to center of exit
+                    if(positionHolder.x < _EndPosition.position.x - .1f)
+                    {
+                        positionHolder.x += Time.deltaTime * _CorrectiveSpeed;
+                    }
+                    else if(positionHolder.x > _EndPosition.position.x + .1f)
+                    {
+                        positionHolder.x -= Time.deltaTime * _CorrectiveSpeed;
+                    }
+
                     scaleHolder.x = 1f - (.5f * DistanceTraveled());
                     scaleHolder.y = 1f - (.5f * DistanceTraveled());
                 }
@@ -124,11 +93,11 @@ public class ConveyorBelt : MonoBehaviour
     {
         bool rtn = false;
 
-        if (Direction == Vector3.right)
+        if (MainBelt())
         {
             rtn = positionHolder.x >= _EndPosition.position.x;
         }
-        else if (Direction == Vector3.up)
+        else if (ForwardBelt())
         {
             rtn = positionHolder.y >= _EndPosition.position.y;
         }
@@ -140,16 +109,26 @@ public class ConveyorBelt : MonoBehaviour
     {
         float rtn = 0f;
 
-        if (Direction == Vector3.right)
+        if (MainBelt())
         {
             rtn = positionHolder.x / _EndPosition.position.x;
         }
-        else if (Direction == Vector3.up)
+        else if (ForwardBelt())
         {
             rtn = positionHolder.y / _EndPosition.position.y;
         }
 
         return rtn;
+    }
+
+    private bool MainBelt()
+    {
+        return Direction == Vector3.right;
+    }
+
+    private bool ForwardBelt()
+    {
+        return Direction == Vector3.up;
     }
 
     private void ItemCollected(ConveyorItem item)
@@ -162,11 +141,19 @@ public class ConveyorBelt : MonoBehaviour
         RecycleItem(item);
     }
 
+    // Recycle item back to dispenser if one exists, otherwise do a rudimentary destroy
     private void RecycleItem(ConveyorItem item)
     {
-        Debugger.Instance.Log($"Belt {gameObject.name} is recycling item: {item.transform.name}");
-        Items.Remove(item);
-        InactiveItemPool.Add(item);
-        item.gameObject.SetActive(false);
+        if(RecycleDispenser != null)
+        {
+            Items.Remove(item);
+            RecycleDispenser.Recycle(item);
+            Debugger.Instance.Log($"Belt {gameObject.name} is RECYCLING item: {item.transform.name}");
+        }
+        else
+        {
+            Destroy(item.gameObject);
+            Debugger.Instance.Log($"Belt {gameObject.name} is DESTROYING item: {item.transform.name}");
+        }
     }
 }
