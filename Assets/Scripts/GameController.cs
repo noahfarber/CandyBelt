@@ -18,6 +18,9 @@ public class GameController : MonoBehaviour
     private float _SpawnTimer = 0f;
     private float _TimeToSpawn = 0f;
 
+    private float _RoundResetTimer = 0f;
+    private float _TimeBetweenRounds = 5f;
+
     private void Awake()
     {
         if(Instance == null)
@@ -28,39 +31,44 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        UpdateSpawnTime();
-        RoundManager.RestartRound();
+        UpdateNextSpawnTime();
+        RoundManager.StartNextRound(0);
     }
 
     void Update()
     {
         if (State == GameStates.Playing)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                SpawnItem();
-            }
-
             if (RoundManager.CanSpawnItems())
             {
                 CheckForSpawn();
             }
-
-            ProcessBelts();
+            else if(ItemManager.Instance.AllItemsInactive())
+            {
+                WaitForNextRound();
+            }
         }
     }
 
     public void CollectItem(ConveyorItem item)
     {
-        RoundManager.CollectItem();
+        if (item.CurrentBelt.AcceptableTypes.HasFlag(item.Type))
+        {
+            RoundManager.CollectItem();
+        }
+
+        // Last item spawned
+        if (!RoundManager.CanSpawnItems() && ItemManager.Instance.AllItemsInactive())
+        {
+            StartNextRoundDelay();
+        }
     }
 
     public void TryChangeBelt(ConveyorItem item)
     {
         if (item.TouchingBelt != null && item.TouchingBelt != item.CurrentBelt)
         {
-            item.CurrentBelt.RemoveItem(item);
-            item.TouchingBelt.AddItem(item);
+            item.TouchingBelt.ReceiveItem(item);
         }
     }
 
@@ -78,14 +86,6 @@ public class GameController : MonoBehaviour
         Debugger.Instance.Log($"State Changed: {State}");
     }
 
-    private void ProcessBelts()
-    {
-        for (int i = 0; i < ConveyorBelts.Length; i++)
-        {
-            ConveyorBelts[i].Process();
-        }
-    }
-
     private void CheckForSpawn()
     {
         if(_SpawnTimer >= _TimeToSpawn)
@@ -98,17 +98,39 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void UpdateSpawnTime()
+    private void StartNextRoundDelay()
     {
+        _RoundResetTimer = 0f;
+        RoundManager.DisplayMessage($"ROUND {RoundManager.RoundNumber + 1} COMPLETE!", 1f);
+    }
+
+    private void WaitForNextRound()
+    {
+        if(_RoundResetTimer >= _TimeBetweenRounds)
+        {
+            RoundManager.StartNextRound();
+        }
+        else
+        {
+            _RoundResetTimer += Time.deltaTime;
+            if(_RoundResetTimer > 1.5f)
+            {
+                RoundManager.DisplayMessage($"ROUND {RoundManager.RoundNumber + 2} STARTING IN {(int)(_TimeBetweenRounds - _RoundResetTimer)}s", 999f);
+            }
+        }
+    }
+
+    private void UpdateNextSpawnTime()
+    {
+        _SpawnTimer = 0f;
         _TimeToSpawn = Random.Range(_MinSpawnTime, _MaxSpawnTime);
     }
 
     private void SpawnItem()
     {
-        ItemDispenser.SpawnItem();
-        UpdateSpawnTime();
+        ItemDispenser.DropItem();
         RoundManager.ItemSpawned();
-        _SpawnTimer = 0f;
+        UpdateNextSpawnTime();
     }
 }
 

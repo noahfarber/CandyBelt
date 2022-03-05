@@ -11,12 +11,6 @@ public class InputController : MonoBehaviour
     private ConveyorItem _LastItemClicked;
     private Vector3 _MousePosOnItemClick = Vector3.zero;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {

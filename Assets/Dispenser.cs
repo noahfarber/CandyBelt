@@ -1,66 +1,54 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class Dispenser : MonoBehaviour
 {
+    public ItemManager ItemManager;
+
     [SerializeField] private ConveyorBelt AssociatedBelt;
-    [SerializeField] private GameObject[] _ConveyorItemPrefabs;
+    [SerializeField] private Animator DispenserAnimation;
     [SerializeField] private Transform _SpawnPosition;
-    [SerializeField] private Transform _InactiveItems;
-    [HideInInspector] public List<ConveyorItem> InactiveItemList = new List<ConveyorItem>();
-    private int _ItemsToGenerateOnStart = 5;
+    [SerializeField] private Transform _BeltStartPosition;
+    private ConveyorItem _NextItemToSpawn;
+    private ConveyorItem _ItemSpawning;
 
     // Start is called before the first frame update
     void Start()
     {
-        Init();
+        UpdateNextItem();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void UpdateNextItem()
     {
-        
+        _NextItemToSpawn = ItemManager.GetRandomItem();
+        _NextItemToSpawn.State = ItemState.Spawning;
+        _NextItemToSpawn.gameObject.SetActive(true);
+        _NextItemToSpawn.Sprite.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+        _NextItemToSpawn.transform.position = _SpawnPosition.position;
+        _NextItemToSpawn.transform.localScale = Vector3.zero;
+        _NextItemToSpawn.transform.DOScale(1f, .25f);
     }
 
-    private void Init()
+    public void DropItem()
     {
-        if (InactiveItemList.Count == 0)
-        {
-            for (int i = 0; i < _ItemsToGenerateOnStart; i++)
-            {
-                CreateItem();
-            }
-        }
-    }
-
-    private void CreateItem()
-    {
-        GameObject prefab = Instantiate(_ConveyorItemPrefabs[Random.Range(0, _ConveyorItemPrefabs.Length)], transform);
-        InactiveItemList.Add(prefab.GetComponent<ConveyorItem>());
-        prefab.SetActive(false);
-    }
-
-    public void SpawnItem()
-    {
-        if (InactiveItemList.Count <= 0)
-        {
-            CreateItem();
-        }
-
-        ConveyorItem itemToSpawn = InactiveItemList[Random.Range(0, InactiveItemList.Count)];
-        itemToSpawn.transform.position = _SpawnPosition.position;
-        itemToSpawn.gameObject.SetActive(true);
-        AssociatedBelt.AddItem(itemToSpawn);
-        if (InactiveItemList.Contains(itemToSpawn)) { InactiveItemList.Remove(itemToSpawn); }
+        DispenserAnimation.Play("Dispense");
+        _ItemSpawning = _NextItemToSpawn;
+        _ItemSpawning.gameObject.SetActive(true);
+        _ItemSpawning.transform.DOMove(_BeltStartPosition.position, .5f).OnComplete(AttachItemToBelt);
+        UpdateNextItem();
 
         Debugger.Instance.Log($"Spawning a candy to conveyor belt: {AssociatedBelt.name}");
     }
 
-    public void Recycle(ConveyorItem item)
+    private void AttachItemToBelt()
     {
-        InactiveItemList.Add(item);
-        item.gameObject.SetActive(false);
-        item.transform.parent = _InactiveItems;
+        ItemManager.ActiveItemList.Add(_ItemSpawning);
+        _ItemSpawning.Sprite.maskInteraction = SpriteMaskInteraction.None;
+        _ItemSpawning.State = ItemState.Moving;
+        AssociatedBelt.ReceiveItem(_ItemSpawning);
+        _ItemSpawning = null;
     }
+
 }
