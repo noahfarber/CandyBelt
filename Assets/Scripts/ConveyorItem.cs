@@ -53,7 +53,7 @@ public class ConveyorItem : MonoBehaviour
     {
         State = ItemState.Disabled;
         ItemManager.Instance.Recycle(this);
-        GameController.Instance.CollectItem(this);
+        CandyGameController.Instance.CollectItem(this);
     }
 
     private void ApplyPositionCorrection()

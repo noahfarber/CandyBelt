@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InputController : MonoBehaviour
 {
-    public GameController Controller;
+    public CandyGameController Controller;
 
     private Vector3 _MousePos = Vector3.zero;
     private Vector3 _WorldPoint = Vector3.zero;
