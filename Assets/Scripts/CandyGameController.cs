@@ -20,6 +20,8 @@ public class CandyGameController : GameController
     private float _RoundResetTimer = 0f;
     private float _TimeBetweenRounds = 5f;
 
+    private GameStates State;
+
     private void Awake()
     {
         if(Instance == null)
@@ -134,7 +136,7 @@ public class CandyGameController : GameController
     }
 }
 
-public enum CandyGameState : GameState
+public enum GameStates
 {
     MainMenu = 0,
     Playing = 1,
