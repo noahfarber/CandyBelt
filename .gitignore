@@ -95,3 +95,4 @@ crashlytics-build.properties
 *.csproj
 
 /[Aa]ssets/[Pp]lugins/[Ff]ramework/
+/[Aa]ssets/[Pp]lugins/[Ff]ramework.meta

@@ -20,7 +20,7 @@ public class CandyGameController : GameController
     private float _RoundResetTimer = 0f;
     private float _TimeBetweenRounds = 5f;
 
-    private GameStates State;
+    private GameStates CandyState;
 
     private void Awake()
     {
@@ -39,7 +39,7 @@ public class CandyGameController : GameController
 
     public override void Update()
     {
-        if (State == GameStates.Playing)
+        if (CandyState == GameStates.Playing)
         {
             if (RoundManager.CanSpawnItems())
             {
@@ -76,16 +76,16 @@ public class CandyGameController : GameController
 
     public void UpdatePauseState()
     {
-        if(State == GameStates.Playing)
+        if(CandyState == GameStates.Playing)
         {
-            State = GameStates.Paused;
+            CandyState = GameStates.Paused;
         }
-        else if(State == GameStates.Paused)
+        else if(CandyState == GameStates.Paused)
         {
-            State = GameStates.Playing;
+            CandyState = GameStates.Playing;
         }
 
-        Debugger.Instance.Log($"State Changed: {State}");
+        Debugger.Instance.Log($"State Changed: {CandyState}");
     }
 
     private void CheckForSpawn()
